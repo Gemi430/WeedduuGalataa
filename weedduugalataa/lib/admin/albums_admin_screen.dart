@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/album.dart';
 import 'album_form_screen.dart';
+import 'album_songs_admin_screen.dart';
 
 class AlbumsAdminScreen extends StatelessWidget {
   const AlbumsAdminScreen({super.key});
@@ -69,6 +70,14 @@ class AlbumsAdminScreen extends StatelessWidget {
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      IconButton(
+                        icon: const Icon(Icons.reorder, color: Colors.teal),
+                        tooltip: "Reorder songs",
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => AlbumSongsAdminScreen(albumId: album.id, albumTitle: album.title)),
+                        ),
+                      ),
                       IconButton(
                         icon: const Icon(Icons.edit, color: Colors.blue),
                         onPressed: () => Navigator.push(

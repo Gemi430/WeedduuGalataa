@@ -6,6 +6,8 @@ class Song {
   final String? style;
   final String? albumId;
   final bool isSingle;
+  final String? singerName;
+  final int orderIndex;
 
   Song({
     required this.id,
@@ -15,6 +17,8 @@ class Song {
     this.style,
     this.albumId,
     this.isSingle = false,
+    this.singerName,
+    this.orderIndex = 0,
   });
 
   factory Song.fromMap(Map<String, dynamic> data, String id) {
@@ -26,6 +30,8 @@ class Song {
       style: data['style'],
       albumId: data['albumId'],
       isSingle: data['isSingle'] ?? false,
+      singerName: data['singerName'],
+      orderIndex: data['orderIndex'] ?? 0,
     );
   }
 
@@ -37,6 +43,8 @@ class Song {
       'style': style,
       'albumId': albumId,
       'isSingle': isSingle,
+      'singerName': singerName,
+      'orderIndex': orderIndex,
     };
   }
 }

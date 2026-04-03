@@ -39,7 +39,9 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
         );
       }
     } on FirebaseAuthException catch (e) {
-      setState(() => _error = e.message);
+      setState(() => _error = e.message ?? e.code);
+    } catch (e) {
+      setState(() => _error = e.toString());
     } finally {
       if (mounted) setState(() => _loading = false);
     }

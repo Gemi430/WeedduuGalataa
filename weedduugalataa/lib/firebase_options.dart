@@ -24,12 +24,13 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: "AIzaSyDOCAbC123dEf456GhI789jKl012-MnO",
-    appId: "1:000000000000:web:0000000000000000000000",
-    messagingSenderId: "000000000000",
-    projectId: "gemechis-cef27",
-    authDomain: "gemechis-cef27.firebaseapp.com",
-    storageBucket: "gemechis-cef27.appspot.com",
+  apiKey: "AIzaSyDhkwlNstB1_urQIR-MuFXuhWoLVbBnxOE",
+  authDomain: "gemechis-cef27.firebaseapp.com",
+  projectId: "gemechis-cef27",
+  storageBucket: "gemechis-cef27.firebasestorage.app",
+  messagingSenderId: "923218740500",
+  appId: "1:923218740500:web:b89d56691dcb227883ee01",
+  measurementId: "G-LE4F7YVHVS"
   );
 
   static const FirebaseOptions android = FirebaseOptions(

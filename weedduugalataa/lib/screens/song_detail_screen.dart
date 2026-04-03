@@ -95,11 +95,12 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (song.scale != null || song.style != null)
+                      if (song.singerName != null || song.scale != null || song.style != null)
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
                           children: [
+                            if (song.singerName != null) _buildChip(song.singerName!, Colors.green),
                             if (song.scale != null) _buildChip(song.scale!, const Color(0xFF1A237E)),
                             if (song.style != null) _buildChip(song.style!, const Color(0xFFFF6F00)),
                             if (song.isSingle) _buildChip("Single", const Color(0xFF4CAF50)),
@@ -203,4 +204,5 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
     );
   }
 }
+
 
