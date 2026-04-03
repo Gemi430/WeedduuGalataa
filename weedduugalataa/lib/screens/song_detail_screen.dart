@@ -38,7 +38,7 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
   }
 
   void _share(String title, String lyrics) {
-    SharePlus.instance.share(ShareParams(text: '$title\n\n$lyrics'));
+    Share.share('$title\n\n$lyrics');
   }
 
   @override
@@ -203,3 +203,4 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
     );
   }
 }
+
