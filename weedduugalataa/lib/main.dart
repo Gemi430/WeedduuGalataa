@@ -47,10 +47,13 @@ class WeedduuApp extends StatelessWidget {
       colorScheme: ColorScheme.fromSeed(
         seedColor: const Color(0xFF1A237E),
         primary: const Color(0xFF1A237E),
-        secondary: const Color(0xFFFFC107),
+        secondary: const Color(0xFF1A237E),
         brightness: Brightness.light,
+        surface: Colors.white,
+        surfaceContainerHighest: const Color(0xFFF5F6FA),
       ),
       useMaterial3: true,
+      scaffoldBackgroundColor: const Color(0xFFF5F6FA),
       textTheme: TextTheme(
         bodyMedium: TextStyle(fontSize: fontSize),
         bodyLarge: TextStyle(fontSize: fontSize + 2),
@@ -60,15 +63,25 @@ class WeedduuApp extends StatelessWidget {
         backgroundColor: Color(0xFF1A237E),
         foregroundColor: Colors.white,
         elevation: 0,
+        centerTitle: false,
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: Colors.white,
         indicatorColor: const Color(0xFF1A237E).withValues(alpha: 0.1),
+        surfaceTintColor: Colors.transparent,
+        elevation: 4,
       ),
       cardTheme: CardThemeData(
-        elevation: 2,
+        elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         color: Colors.white,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF1A237E))),
       ),
     );
   }
@@ -77,13 +90,14 @@ class WeedduuApp extends StatelessWidget {
     return ThemeData(
       colorScheme: ColorScheme.fromSeed(
         seedColor: const Color(0xFF1A237E),
-        primary: const Color(0xFF3949AB),
-        secondary: const Color(0xFFFFC107),
+        primary: const Color(0xFF7986CB),
+        secondary: const Color(0xFF7986CB),
         brightness: Brightness.dark,
         surface: const Color(0xFF1E1E2E),
+        surfaceContainerHighest: const Color(0xFF252535),
       ),
       useMaterial3: true,
-      scaffoldBackgroundColor: const Color(0xFF121212),
+      scaffoldBackgroundColor: const Color(0xFF121220),
       textTheme: TextTheme(
         bodyMedium: TextStyle(fontSize: fontSize),
         bodyLarge: TextStyle(fontSize: fontSize + 2),
@@ -93,15 +107,25 @@ class WeedduuApp extends StatelessWidget {
         backgroundColor: Color(0xFF1E1E2E),
         foregroundColor: Colors.white,
         elevation: 0,
+        centerTitle: false,
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: const Color(0xFF1E1E2E),
-        indicatorColor: const Color(0xFF3949AB).withValues(alpha: 0.3),
+        indicatorColor: const Color(0xFF7986CB).withValues(alpha: 0.2),
+        surfaceTintColor: Colors.transparent,
+        elevation: 4,
       ),
       cardTheme: CardThemeData(
-        elevation: 2,
+        elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         color: const Color(0xFF1E1E2E),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: const Color(0xFF252535),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF333350))),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF333350))),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF7986CB))),
       ),
     );
   }
