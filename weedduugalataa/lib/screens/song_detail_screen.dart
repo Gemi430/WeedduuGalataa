@@ -37,6 +37,10 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
     if (mounted) setState(() => _isFavorite = !_isFavorite);
   }
 
+  void _share(String title, String lyrics) {
+    SharePlus.instance.share(ShareParams(text: '$title\n\n$lyrics'));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -81,7 +85,7 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.share, color: Colors.white),
-                    onPressed: () => SharePlus.instance.share(ShareParams(text: '\n\n')),
+                    onPressed: () => _share(song.title, song.lyrics),
                   ),
                 ],
               ),
@@ -104,7 +108,7 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
                       const SizedBox(height: 24),
                       _buildLyricsSection(song.lyrics),
                       const SizedBox(height: 24),
-                      _buildActionButtons(song.lyrics),
+                      _buildActionButtons(song.title, song.lyrics),
                     ],
                   ),
                 ),
@@ -162,7 +166,7 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
     );
   }
 
-  Widget _buildActionButtons(String lyrics) {
+  Widget _buildActionButtons(String title, String lyrics) {
     return Row(
       children: [
         Expanded(
@@ -185,7 +189,7 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
         const SizedBox(width: 12),
         Expanded(
           child: OutlinedButton.icon(
-            onPressed: () {},
+            onPressed: () => _share(title, lyrics),
             icon: const Icon(Icons.share),
             label: const Text("Share"),
             style: OutlinedButton.styleFrom(
@@ -199,5 +203,3 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
     );
   }
 }
-
-
