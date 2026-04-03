@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/theme_notifier.dart';
 import '../theme/font_size_notifier.dart';
+import '../admin/admin_login_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -55,6 +56,12 @@ class SettingsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           _buildSectionHeader("About"),
+          _buildSettingsTile(
+            icon: Icons.admin_panel_settings,
+            title: "Admin Dashboard",
+            subtitle: "Manage songs and albums",
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminLoginScreen())),
+          ),
           _buildSettingsTile(
             icon: Icons.info,
             title: "App Version",
