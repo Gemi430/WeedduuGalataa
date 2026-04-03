@@ -7,6 +7,8 @@ import "theme/font_size_notifier.dart";
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await loadTheme();
+  await loadFontSize();
   try {
     await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   } catch (e) {

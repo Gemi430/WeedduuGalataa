@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 import '../services/song_service.dart';
 import '../services/favorites_service.dart';
 import '../models/song.dart';
@@ -80,7 +81,7 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.share, color: Colors.white),
-                    onPressed: () {},
+                    onPressed: () => SharePlus.instance.share(ShareParams(text: '\n\n')),
                   ),
                 ],
               ),
@@ -198,3 +199,5 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
     );
   }
 }
+
+

@@ -137,7 +137,7 @@ class SettingsScreen extends StatelessWidget {
                       : null,
                   selected: isSelected,
                   onTap: () {
-                    fontSizeNotifier.value = entry.value;
+                    saveFontSize(entry.value);
                     Navigator.pop(ctx);
                   },
                 );
