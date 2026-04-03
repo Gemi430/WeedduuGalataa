@@ -40,7 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
           NavigationDestination(icon: Icon(Icons.home), label: "Home"),
           NavigationDestination(icon: Icon(Icons.piano), label: "Scales"),
           NavigationDestination(icon: Icon(Icons.album), label: "Albums"),
-          NavigationDestination(icon: Icon(Icons.star), label: "Singles"),
+          NavigationDestination(icon: Icon(Icons.library_music), label: "Songs"),
           NavigationDestination(icon: Icon(Icons.settings), label: "Settings"),
         ],
       ),
@@ -258,7 +258,7 @@ class _HomeContentState extends State<HomeContent> {
     final quickAccessItems = [
       {'icon': Icons.piano, 'label': 'By Scale', 'color': Colors.teal, 'screen': const ScalesScreen()},
       {'icon': Icons.album, 'label': 'Albums', 'color': Colors.purple, 'screen': const AlbumsScreen()},
-      {'icon': Icons.star, 'label': 'Singles', 'color': Colors.amber, 'screen': const SinglesScreen()},
+      {'icon': Icons.library_music, 'label': 'Songs', 'color': Colors.amber, 'screen': const SinglesScreen()},
       {'icon': Icons.favorite, 'label': 'Favorites', 'color': Colors.pink, 'screen': const FavoritesScreen()},
     ];
 

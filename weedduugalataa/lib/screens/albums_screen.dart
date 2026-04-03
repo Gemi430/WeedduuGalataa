@@ -12,81 +12,87 @@ class AlbumsScreen extends StatelessWidget {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 180,
+            expandedHeight: 160,
             floating: true,
             pinned: true,
-            backgroundColor: const Color(0xFF7B1FA2),
+            backgroundColor: const Color(0xFF6A1B9A),
             flexibleSpace: FlexibleSpaceBar(
               title: const Text("Albums"),
               background: Container(
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [const Color(0xFF7B1FA2), const Color(0xFF9C27B0)],
+                    colors: [Color(0xFF6A1B9A), Color(0xFF8E24AA)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                 ),
                 child: Center(
-                  child: Icon(Icons.album, size: 64, color: Colors.white.withOpacity(0.2)),
+                  child: Icon(Icons.album, size: 64, color: Colors.white.withValues(alpha: 0.15)),
                 ),
               ),
             ),
           ),
           SliverToBoxAdapter(
             child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance.collection('albums').snapshots(),
+              stream: FirebaseFirestore.instance.collection('albums').orderBy('title').snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: Padding(
-                    padding: EdgeInsets.all(32),
+                    padding: EdgeInsets.all(48),
                     child: CircularProgressIndicator(),
                   ));
                 }
 
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                   return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const SizedBox(height: 48),
-                        Icon(Icons.album, size: 64, color: Colors.grey[400]),
-                        const SizedBox(height: 16),
-                        Text(
-                          "No albums available",
-                          style: TextStyle(fontSize: 18, color: Colors.grey[600]),
-                        ),
-                      ],
+                    child: Padding(
+                      padding: const EdgeInsets.all(48),
+                      child: Column(
+                        children: [
+                          Icon(Icons.album, size: 64, color: Colors.grey[400]),
+                          const SizedBox(height: 16),
+                          Text("No albums available", style: TextStyle(fontSize: 18, color: Colors.grey[600])),
+                        ],
+                      ),
                     ),
                   );
                 }
 
+                final docs = snapshot.data!.docs;
                 return Padding(
                   padding: const EdgeInsets.all(16),
-                  child: GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                      childAspectRatio: 0.85,
-                    ),
-                    itemCount: snapshot.data!.docs.length,
-                    itemBuilder: (context, index) {
-                      final album = Album.fromMap(
-                        snapshot.data!.docs[index].data() as Map<String, dynamic>,
-                        snapshot.data!.docs[index].id,
-                      );
-                      final colors = [
-                        [Colors.deepPurple, Colors.purple],
-                        [Colors.teal, Colors.teal[700]!],
-                        [Colors.orange, Colors.deepOrange],
-                        [Colors.pink, Colors.pink],
-                        [Colors.blue, Colors.blue[700]!],
-                        [Colors.green, Colors.green[700]!],
-                      ][index % 6];
-                      return _buildAlbumCard(album, colors, context);
-                    },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "${docs.length} Albums",
+                        style: TextStyle(fontSize: 13, color: Colors.grey[600], fontWeight: FontWeight.w500),
+                      ),
+                      const SizedBox(height: 16),
+                      GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 14,
+                          mainAxisSpacing: 14,
+                          childAspectRatio: 0.85,
+                        ),
+                        itemCount: docs.length,
+                        itemBuilder: (context, index) {
+                          final album = Album.fromMap(docs[index].data() as Map<String, dynamic>, docs[index].id);
+                          final gradients = [
+                            [const Color(0xFF6A1B9A), const Color(0xFF8E24AA)],
+                            [const Color(0xFF1A237E), const Color(0xFF3949AB)],
+                            [const Color(0xFF00695C), const Color(0xFF00897B)],
+                            [const Color(0xFFE65100), const Color(0xFFF57C00)],
+                            [const Color(0xFF1565C0), const Color(0xFF1976D2)],
+                            [const Color(0xFF2E7D32), const Color(0xFF388E3C)],
+                          ][index % 6];
+                          return _buildAlbumCard(album, gradients, context);
+                        },
+                      ),
+                    ],
                   ),
                 );
               },
@@ -101,77 +107,55 @@ class AlbumsScreen extends StatelessWidget {
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (_) => AlbumSongsScreen(albumId: album.id, albumTitle: album.title),
-        ),
+        MaterialPageRoute(builder: (_) => AlbumSongsScreen(albumId: album.id, albumTitle: album.title)),
       ),
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            colors: colors,
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: colors[0].withOpacity(0.3),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(20),
+          gradient: LinearGradient(colors: colors, begin: Alignment.topLeft, end: Alignment.bottomRight),
+          boxShadow: [BoxShadow(color: colors[0].withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
         ),
         child: Stack(
           children: [
             Positioned(
-              top: 12,
-              right: 12,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  "${album.songIds.length} songs",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                  ),
-                ),
-              ),
+              top: -20,
+              right: -20,
+              child: Icon(Icons.album, size: 100, color: Colors.white.withValues(alpha: 0.08)),
             ),
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.transparent, Colors.black.withOpacity(0.6)],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                  borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(Icons.music_note, color: Colors.white, size: 32),
-                    const SizedBox(height: 8),
-                    Text(
-                      album.title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  ],
-                ),
+                    child: const Icon(Icons.album, color: Colors.white, size: 28),
+                  ),
+                  const Spacer(),
+                  Text(
+                    album.title,
+                    style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      "${album.songIds.length} songs",
+                      style: const TextStyle(color: Colors.white, fontSize: 11),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

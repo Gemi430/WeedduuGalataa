@@ -38,6 +38,17 @@ class SongService {
     return snapshot.docs.map((doc) => Song.fromMap(doc.data(), doc.id)).toList();
   }
 
+  // All songs
+  Stream<List<Song>> getAllSongs() {
+    return _firestore
+        .collection('songs')
+        .orderBy('title')
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) => Song.fromMap(doc.data(), doc.id)).toList();
+    });
+  }
+
   // Singles
   Stream<List<Song>> getSingles() {
     return _firestore

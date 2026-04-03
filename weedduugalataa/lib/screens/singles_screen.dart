@@ -12,69 +12,79 @@ class SinglesScreen extends StatelessWidget {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 180,
+            expandedHeight: 160,
             floating: true,
             pinned: true,
-            backgroundColor: const Color(0xFFFF6F00),
+            backgroundColor: const Color(0xFF1A237E),
             flexibleSpace: FlexibleSpaceBar(
-              title: const Text("Singles"),
+              title: const Text("All Songs"),
               background: Container(
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [const Color(0xFFFF6F00), const Color(0xFFFFA000)],
+                    colors: [Color(0xFF1A237E), Color(0xFF3949AB)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                 ),
                 child: Center(
-                  child: Icon(Icons.star, size: 64, color: Colors.white.withOpacity(0.2)),
+                  child: Icon(Icons.library_music, size: 64, color: Colors.white.withValues(alpha: 0.15)),
                 ),
               ),
             ),
           ),
           SliverToBoxAdapter(
             child: StreamBuilder<List<Song>>(
-              stream: SongService().getSingles(),
+              stream: SongService().getAllSongs(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: Padding(
-                    padding: EdgeInsets.all(32),
+                    padding: EdgeInsets.all(48),
                     child: CircularProgressIndicator(),
                   ));
                 }
 
                 if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const SizedBox(height: 48),
-                        Icon(Icons.star_border, size: 64, color: Colors.grey[400]),
-                        const SizedBox(height: 16),
-                        Text(
-                          "No singles available",
-                          style: TextStyle(fontSize: 18, color: Colors.grey[600]),
-                        ),
-                      ],
+                    child: Padding(
+                      padding: const EdgeInsets.all(48),
+                      child: Column(
+                        children: [
+                          Icon(Icons.music_off, size: 64, color: Colors.grey[400]),
+                          const SizedBox(height: 16),
+                          Text("No songs available", style: TextStyle(fontSize: 18, color: Colors.grey[600])),
+                        ],
+                      ),
                     ),
                   );
                 }
 
-                return ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
+                final songs = snapshot.data!;
+                return Padding(
                   padding: const EdgeInsets.all(16),
-                  itemCount: snapshot.data!.length,
-                  itemBuilder: (context, index) {
-                    final song = snapshot.data![index];
-                    final colors = [
-                      [Colors.amber, Colors.orange],
-                      [Colors.pink, Colors.purple],
-                      [Colors.teal, Colors.teal[700]!],
-                      [Colors.blue, Colors.blue[700]!],
-                    ][index % 4];
-                    return _buildSingleCard(song, colors, context);
-                  },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "${songs.length} Songs",
+                        style: TextStyle(fontSize: 13, color: Colors.grey[600], fontWeight: FontWeight.w500),
+                      ),
+                      const SizedBox(height: 12),
+                      ...songs.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final song = entry.value;
+                        final colors = [
+                          [const Color(0xFF1A237E), const Color(0xFF3949AB)],
+                          [const Color(0xFF00695C), const Color(0xFF00897B)],
+                          [const Color(0xFF6A1B9A), const Color(0xFF8E24AA)],
+                          [const Color(0xFFE65100), const Color(0xFFF57C00)],
+                          [const Color(0xFF1565C0), const Color(0xFF1976D2)],
+                          [const Color(0xFF2E7D32), const Color(0xFF388E3C)],
+                        ][index % 6];
+
+                        return _buildSongCard(song, colors, context);
+                      }),
+                    ],
+                  ),
                 );
               },
             ),
@@ -84,7 +94,7 @@ class SinglesScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSingleCard(Song song, List<Color> colors, BuildContext context) {
+  Widget _buildSongCard(Song song, List<Color> colors, BuildContext context) {
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
@@ -94,54 +104,59 @@ class SinglesScreen extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            colors: colors,
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: colors[0].withOpacity(0.3),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          gradient: LinearGradient(colors: colors, begin: Alignment.centerLeft, end: Alignment.centerRight),
+          boxShadow: [BoxShadow(color: colors[0].withValues(alpha: 0.25), blurRadius: 8, offset: const Offset(0, 3))],
         ),
-        child: ListTile(
-          contentPadding: const EdgeInsets.all(16),
-          leading: Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(Icons.star, color: Colors.white, size: 28),
-          ),
-          title: Text(
-            song.title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          subtitle: song.style != null
-              ? Text(
-                  song.style!,
-                  style: TextStyle(color: Colors.white.withOpacity(0.8)),
-                )
-              : null,
-          trailing: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.arrow_forward, color: Colors.white, size: 20),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.music_note, color: Colors.white, size: 26),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(song.title, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 4),
+                    Wrap(
+                      spacing: 6,
+                      children: [
+                        if (song.singerName != null)
+                          _tag(song.singerName!),
+                        if (song.scale != null)
+                          _tag(song.scale!),
+                        if (song.style != null)
+                          _tag(song.style!),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
+            ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _tag(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(label, style: const TextStyle(color: Colors.white, fontSize: 11)),
     );
   }
 }
