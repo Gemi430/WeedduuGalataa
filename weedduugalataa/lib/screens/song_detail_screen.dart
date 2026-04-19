@@ -43,15 +43,34 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final appBarColor = isDark ? Colors.black : const Color(0xFF1A237E);
+    final backgroundColor = isDark ? Colors.black : Colors.white;
+    final textColor = isDark ? const Color(0xFF9FA8DA) : const Color(0xFF1A237E);
+    final iconColor = isDark ? const Color(0xFF9FA8DA) : const Color(0xFF1A237E);
+
     return Scaffold(
+      backgroundColor: backgroundColor,
       body: FutureBuilder<Song?>(
         future: _songFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(child: CircularProgressIndicator(color: textColor));
           }
           if (!snapshot.hasData) {
-            return const Center(child: Text("Song not found"));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.music_off, size: 64, color: textColor.withOpacity(0.5)),
+                  const SizedBox(height: 16),
+                  Text(
+                    "Song not found",
+                    style: TextStyle(fontSize: 16, color: textColor),
+                  ),
+                ],
+              ),
+            );
           }
           final song = snapshot.data!;
           return CustomScrollView(
@@ -59,19 +78,30 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
               SliverAppBar(
                 expandedHeight: 200,
                 pinned: true,
-                backgroundColor: const Color(0xFF1A237E),
+                backgroundColor: appBarColor,
                 flexibleSpace: FlexibleSpaceBar(
-                  title: Text(song.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  title: Text(
+                    song.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.white),
+                  ),
                   background: Container(
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Color(0xFF1A237E), Color(0xFF3949AB)],
+                        colors: isDark
+                            ? [Colors.black, Colors.grey[900]!]
+                            : [const Color(0xFF1A237E), const Color(0xFF3949AB)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                     ),
                     child: const Center(
-                      child: Icon(Icons.music_note, size: 80, color: Color.fromRGBO(255, 255, 255, 0.2)),
+                      child: Icon(
+                        Icons.music_note,
+                        size: 80,
+                        color: Color.fromRGBO(255, 255, 255, 0.2),
+                      ),
                     ),
                   ),
                 ),
@@ -100,16 +130,16 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
                           spacing: 8,
                           runSpacing: 8,
                           children: [
-                            if (song.singerName != null) _buildChip(song.singerName!, Colors.green),
-                            if (song.scale != null) _buildChip(song.scale!, const Color(0xFF1A237E)),
-                            if (song.style != null) _buildChip(song.style!, const Color(0xFFFF6F00)),
-                            if (song.isSingle) _buildChip("Single", const Color(0xFF4CAF50)),
+                            if (song.singerName != null) _buildChip(song.singerName!, Colors.green, textColor),
+                            if (song.scale != null) _buildChip(song.scale!, const Color(0xFF1A237E), textColor),
+                            if (song.style != null) _buildChip(song.style!, const Color(0xFFFF6F00), textColor),
+                            if (song.isSingle) _buildChip("Single", const Color(0xFF4CAF50), textColor),
                           ],
                         ),
                       const SizedBox(height: 24),
-                      _buildLyricsSection(song.lyrics),
+                      _buildLyricsSection(song.lyrics, textColor),
                       const SizedBox(height: 24),
-                      _buildActionButtons(song.title, song.lyrics),
+                      _buildActionButtons(song.title, song.lyrics, textColor),
                     ],
                   ),
                 ),
@@ -121,7 +151,7 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
     );
   }
 
-  Widget _buildChip(String label, Color color) {
+  Widget _buildChip(String label, Color color, Color textColor) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -129,29 +159,48 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Color.fromRGBO(color.red, color.green, color.blue, 0.3)),
       ),
-      child: Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w500)),
+      child: Text(
+        label,
+        style: TextStyle(color: color, fontWeight: FontWeight.w500),
+      ),
     );
   }
 
-  Widget _buildLyricsSection(String lyrics) {
+  Widget _buildLyricsSection(String lyrics, Color textColor) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? Colors.grey[900]! : Colors.white;
+    final borderColor = isDark ? Colors.grey[700]! : Colors.grey[200]!;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: cardColor,
+        border: Border.all(color: borderColor, width: 1.5),
         borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(color: Color.fromRGBO(158, 158, 158, 0.1), blurRadius: 10, offset: Offset(0, 4)),
+        boxShadow: [
+          BoxShadow(
+            color: textColor.withOpacity(0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.format_quote, color: Color.fromRGBO(26, 35, 126, 0.5)),
-              SizedBox(width: 8),
-              Text("Lyrics", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color.fromRGBO(26, 35, 126, 0.7))),
+              Icon(Icons.format_quote, color: textColor.withOpacity(0.5)),
+              const SizedBox(width: 8),
+              Text(
+                "Lyrics",
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: textColor,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -159,7 +208,11 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
             valueListenable: fontSizeNotifier,
             builder: (context, fontSize, _) => Text(
               lyrics,
-              style: TextStyle(fontSize: fontSize, height: 1.8),
+              style: TextStyle(
+                fontSize: fontSize,
+                height: 1.8,
+                color: textColor,
+              ),
             ),
           ),
         ],
@@ -167,7 +220,10 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
     );
   }
 
-  Widget _buildActionButtons(String title, String lyrics) {
+  Widget _buildActionButtons(String title, String lyrics, Color textColor) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final buttonColor = isDark ? const Color(0xFF7986CB) : const Color(0xFF1A237E);
+
     return Row(
       children: [
         Expanded(
@@ -175,14 +231,17 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
             onPressed: () {
               Clipboard.setData(ClipboardData(text: lyrics));
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Lyrics copied!"), duration: Duration(seconds: 2)),
+                SnackBar(
+                  content: const Text("Lyrics copied!"),
+                  backgroundColor: buttonColor,
+                ),
               );
             },
             icon: const Icon(Icons.copy),
             label: const Text("Copy Lyrics"),
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 12),
-              backgroundColor: const Color(0xFF1A237E),
+              backgroundColor: buttonColor,
               foregroundColor: Colors.white,
             ),
           ),
@@ -195,8 +254,8 @@ class _SongDetailScreenState extends State<SongDetailScreen> {
             label: const Text("Share"),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 12),
-              side: const BorderSide(color: Color(0xFF1A237E)),
-              foregroundColor: const Color(0xFF1A237E),
+              side: BorderSide(color: buttonColor),
+              foregroundColor: buttonColor,
             ),
           ),
         ),

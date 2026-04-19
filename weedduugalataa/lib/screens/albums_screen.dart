@@ -8,26 +8,49 @@ class AlbumsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final appBarColor = isDark ? Colors.black : const Color(0xFF1A237E);
+    final gradientStart = isDark ? Colors.black : const Color(0xFF1A237E);
+    final gradientEnd = isDark ? Colors.grey[900]! : const Color(0xFF3949AB);
+    final cardColor = isDark ? Colors.grey[900]! : Colors.white;
+    final cardTextColor = isDark ? const Color(0xFF9FA8DA) : const Color(0xFF1A237E);
+    final sectionTextColor = isDark ? const Color(0xFF9FA8DA) : const Color(0xFF1A237E);
+    final backgroundColor = isDark ? Colors.black : Colors.white;
+    final borderColor = isDark ? Colors.grey[700]! : Colors.grey[300]!;
+
     return Scaffold(
+      backgroundColor: backgroundColor,
+      appBar: AppBar(
+        title: const Text(
+          "Albums",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: appBarColor,
+        iconTheme: const IconThemeData(color: Colors.white),
+        elevation: 0,
+      ),
       body: CustomScrollView(
         slivers: [
-          SliverAppBar(
-            expandedHeight: 160,
-            floating: true,
-            pinned: true,
-            backgroundColor: const Color(0xFF6A1B9A),
-            flexibleSpace: FlexibleSpaceBar(
-              title: const Text("Albums"),
-              background: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF6A1B9A), Color(0xFF8E24AA)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+          SliverToBoxAdapter(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [gradientStart, gradientEnd],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-                child: Center(
-                  child: Icon(Icons.album, size: 64, color: Colors.white.withValues(alpha: 0.15)),
+              ),
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                child: Column(
+                  children: [
+                    Icon(Icons.album, size: 48, color: Colors.white.withOpacity(0.2)),
+                  ],
                 ),
               ),
             ),
@@ -64,10 +87,7 @@ class AlbumsScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        "${docs.length} Albums",
-                        style: TextStyle(fontSize: 13, color: Colors.grey[600], fontWeight: FontWeight.w500),
-                      ),
+                      _buildSectionHeader("${docs.length} Albums", sectionTextColor),
                       const SizedBox(height: 16),
                       GridView.builder(
                         shrinkWrap: true,
@@ -76,20 +96,12 @@ class AlbumsScreen extends StatelessWidget {
                           crossAxisCount: 2,
                           crossAxisSpacing: 14,
                           mainAxisSpacing: 14,
-                          childAspectRatio: 0.85,
+                          childAspectRatio: 0.9,
                         ),
                         itemCount: docs.length,
                         itemBuilder: (context, index) {
                           final album = Album.fromMap(docs[index].data() as Map<String, dynamic>, docs[index].id);
-                          final gradients = [
-                            [const Color(0xFF6A1B9A), const Color(0xFF8E24AA)],
-                            [const Color(0xFF1A237E), const Color(0xFF3949AB)],
-                            [const Color(0xFF00695C), const Color(0xFF00897B)],
-                            [const Color(0xFFE65100), const Color(0xFFF57C00)],
-                            [const Color(0xFF1565C0), const Color(0xFF1976D2)],
-                            [const Color(0xFF2E7D32), const Color(0xFF388E3C)],
-                          ][index % 6];
-                          return _buildAlbumCard(album, gradients, context);
+                          return _buildAlbumCard(album, cardColor, cardTextColor, borderColor, context);
                         },
                       ),
                     ],
@@ -103,7 +115,32 @@ class AlbumsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAlbumCard(Album album, List<Color> colors, BuildContext context) {
+  Widget _buildSectionHeader(String title, Color textColor) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: textColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: textColor.withOpacity(0.2), width: 1),
+          ),
+          child: Icon(Icons.album, color: textColor, size: 22),
+        ),
+        const SizedBox(width: 14),
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: textColor,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAlbumCard(Album album, Color cardColor, Color textColor, Color borderColor, BuildContext context) {
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
@@ -111,54 +148,68 @@ class AlbumsScreen extends StatelessWidget {
       ),
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          gradient: LinearGradient(colors: colors, begin: Alignment.topLeft, end: Alignment.bottomRight),
-          boxShadow: [BoxShadow(color: colors[0].withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
-        ),
-        child: Stack(
-          children: [
-            Positioned(
-              top: -20,
-              right: -20,
-              child: Icon(Icons.album, size: 100, color: Colors.white.withValues(alpha: 0.08)),
+          color: cardColor,
+          border: Border.all(color: borderColor, width: 1.5),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: textColor.withOpacity(0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.end,
+          ],
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
+                      color: textColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(Icons.album, color: Colors.white, size: 28),
+                    child: Icon(Icons.album, color: textColor, size: 24),
                   ),
-                  const Spacer(),
-                  Text(
-                    album.title,
-                    style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      "${album.songIds.length} songs",
-                      style: const TextStyle(color: Colors.white, fontSize: 11),
-                    ),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    color: textColor.withOpacity(0.6),
+                    size: 16,
                   ),
                 ],
               ),
-            ),
-          ],
+              const Spacer(),
+              Text(
+                album.title,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: textColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  "${album.songIds.length} songs",
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -62,58 +62,108 @@ class _SongsAdminScreenState extends State<SongsAdminScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final appBarColor = isDark ? Colors.black : const Color(0xFF1A237E);
+    final backgroundColor = isDark ? Colors.black : Colors.white;
+    final cardColor = isDark ? Colors.grey[900]! : Colors.white;
+    final textColor = isDark ? const Color(0xFF9FA8DA) : const Color(0xFF1A237E);
+    final borderColor = isDark ? Colors.grey[700]! : Colors.grey[300]!;
+
     return Scaffold(
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: _selectionMode
-            ? Text("${_selected.length} selected")
-            : const Text("Manage Songs"),
+        title: Text(
+          _selectionMode ? "${_selected.length} selected" : "Manage Songs",
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: appBarColor,
+        iconTheme: const IconThemeData(color: Colors.white),
+        elevation: 0,
         actions: [
           if (_selectionMode) ...[
-            IconButton(icon: const Icon(Icons.delete), color: Colors.red, onPressed: () => _bulkDelete(context)),
-            IconButton(icon: const Icon(Icons.close), onPressed: () => setState(() { _selected.clear(); _selectionMode = false; })),
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.white),
+              onPressed: () => _bulkDelete(context),
+            ),
+            IconButton(
+              icon: const Icon(Icons.close, color: Colors.white),
+              onPressed: () => setState(() { _selected.clear(); _selectionMode = false; }),
+            ),
           ] else
             IconButton(
-              icon: const Icon(Icons.checklist),
+              icon: const Icon(Icons.checklist, color: Colors.white),
               tooltip: "Select multiple",
               onPressed: () => setState(() => _selectionMode = true),
             ),
         ],
       ),
-      floatingActionButton: _selectionMode ? null : FloatingActionButton.extended(
-        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SongFormScreen())),
-        icon: const Icon(Icons.add),
-        label: const Text("Add Song"),
-        backgroundColor: const Color(0xFF1A237E),
-        foregroundColor: Colors.white,
-      ),
+      floatingActionButton: _selectionMode
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SongFormScreen())),
+              icon: const Icon(Icons.add),
+              label: const Text("Add Song"),
+              backgroundColor: textColor,
+              foregroundColor: isDark ? Colors.black : Colors.white,
+            ),
       body: Column(
         children: [
-          // Filters
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  isDark ? Colors.black : const Color(0xFF1A237E),
+                  isDark ? Colors.grey[900]! : const Color(0xFF3949AB),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
             child: Row(
               children: [
                 Expanded(
-                  child: DropdownButtonFormField<String>(
-                    value: _filterScale,
-                    decoration: const InputDecoration(labelText: "Scale", border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
-                    items: _scales.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
-                    onChanged: (v) => setState(() => _filterScale = v!),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: cardColor,
+                      border: Border.all(color: borderColor, width: 1.5),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: _filterScale,
+                        isExpanded: true,
+                        dropdownColor: cardColor,
+                        items: _scales.map((s) => DropdownMenuItem(value: s, child: Text(s, style: TextStyle(color: textColor)))).toList(),
+                        onChanged: (v) => setState(() => _filterScale = v!),
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: DropdownButtonFormField<String>(
-                    value: _filterStyle,
-                    decoration: const InputDecoration(labelText: "Style", border: OutlineInputBorder(), contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
-                    items: _styles.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
-                    onChanged: (v) => setState(() => _filterStyle = v!),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: cardColor,
+                      border: Border.all(color: borderColor, width: 1.5),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: _filterStyle,
+                        isExpanded: true,
+                        dropdownColor: cardColor,
+                        items: _styles.map((s) => DropdownMenuItem(value: s, child: Text(s, style: TextStyle(color: textColor)))).toList(),
+                        onChanged: (v) => setState(() => _filterStyle = v!),
+                      ),
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 8),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance.collection('songs').orderBy('title').snapshots(),
@@ -122,14 +172,34 @@ class _SongsAdminScreenState extends State<SongsAdminScreen> {
                   return const Center(child: CircularProgressIndicator());
                 }
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(child: Text("No songs yet. Add one!"));
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.music_off, size: 64, color: textColor.withOpacity(0.3)),
+                        const SizedBox(height: 16),
+                        Text("No songs yet. Add one!", style: TextStyle(fontSize: 16, color: textColor.withOpacity(0.6))),
+                      ],
+                    ),
+                  );
                 }
 
                 var docs = snapshot.data!.docs;
                 if (_filterScale != 'All') docs = docs.where((d) => d['scale'] == _filterScale).toList();
                 if (_filterStyle != 'All') docs = docs.where((d) => d['style'] == _filterStyle).toList();
 
-                if (docs.isEmpty) return const Center(child: Text("No songs match the filter"));
+                if (docs.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.search_off, size: 64, color: textColor.withOpacity(0.3)),
+                        const SizedBox(height: 16),
+                        Text("No songs match the filter", style: TextStyle(fontSize: 16, color: textColor.withOpacity(0.6))),
+                      ],
+                    ),
+                  );
+                }
 
                 return ListView.builder(
                   padding: const EdgeInsets.all(16),
@@ -139,41 +209,90 @@ class _SongsAdminScreenState extends State<SongsAdminScreen> {
                     final song = Song.fromMap(doc.data() as Map<String, dynamic>, doc.id);
                     final isSelected = _selected.contains(song.id);
 
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      color: isSelected ? const Color(0xFF1A237E).withValues(alpha: 0.08) : null,
-                      child: ListTile(
-                        leading: _selectionMode
-                            ? Checkbox(
-                                value: isSelected,
-                                onChanged: (v) => setState(() => v! ? _selected.add(song.id) : _selected.remove(song.id)),
-                              )
-                            : Container(
-                                width: 44, height: 44,
-                                decoration: BoxDecoration(color: Colors.teal.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
-                                child: const Icon(Icons.music_note, color: Colors.teal),
+                    return GestureDetector(
+                      onTap: _selectionMode
+                          ? () => setState(() => isSelected ? _selected.remove(song.id) : _selected.add(song.id))
+                          : null,
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          color: isSelected ? textColor.withOpacity(0.08) : cardColor,
+                          border: Border.all(color: isSelected ? textColor : borderColor, width: isSelected ? 2 : 1.5),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          child: Row(
+                            children: [
+                              if (_selectionMode)
+                                Container(
+                                  width: 24,
+                                  height: 24,
+                                  decoration: BoxDecoration(
+                                    color: isSelected ? textColor : Colors.transparent,
+                                    border: Border.all(color: textColor, width: 2),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: isSelected ? Icon(Icons.check, size: 16, color: isDark ? Colors.black : Colors.white) : null,
+                                )
+                              else
+                                Container(
+                                  width: 44,
+                                  height: 44,
+                                  decoration: BoxDecoration(
+                                    color: textColor.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: borderColor, width: 1),
+                                  ),
+                                  child: Icon(Icons.music_note, color: textColor, size: 22),
+                                ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      song.title,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 15,
+                                        color: textColor,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      [
+                                        if (song.singerName != null) song.singerName!,
+                                        if (song.scale != null) song.scale!,
+                                        if (song.style != null) song.style!,
+                                      ].join('  '),
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: textColor.withOpacity(0.7),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                        title: Text(song.title, style: const TextStyle(fontWeight: FontWeight.w500)),
-                        subtitle: Text([
-                          if (song.singerName != null) song.singerName!,
-                          if (song.scale != null) song.scale!,
-                          if (song.style != null) song.style!,
-                        ].join('  ')),
-                        onTap: _selectionMode
-                            ? () => setState(() => isSelected ? _selected.remove(song.id) : _selected.add(song.id))
-                            : null,
-                        trailing: _selectionMode ? null : Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.edit, color: Colors.blue),
-                              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => SongFormScreen(song: song))),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () => _deleteSong(context, song.id),
-                            ),
-                          ],
+                              if (!_selectionMode)
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: Icon(Icons.edit, color: textColor.withOpacity(0.7)),
+                                      onPressed: () => Navigator.push(
+                                        context,
+                                        MaterialPageRoute(builder: (_) => SongFormScreen(song: song)),
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete, color: Colors.red),
+                                      onPressed: () => _deleteSong(context, song.id),
+                                    ),
+                                  ],
+                                ),
+                            ],
+                          ),
                         ),
                       ),
                     );

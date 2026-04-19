@@ -49,11 +49,20 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final appBarColor = isDark ? Colors.black : const Color(0xFF1A237E);
+    final cardColor = isDark ? Colors.grey[900]! : Colors.white;
+    final textColor = isDark ? const Color(0xFF9FA8DA) : const Color(0xFF1A237E);
+    final borderColor = isDark ? Colors.grey[700]! : Colors.grey[300]!;
+
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFF1A237E), Color(0xFF3949AB)],
+            colors: [
+              isDark ? Colors.black : const Color(0xFF1A237E),
+              isDark ? Colors.grey[900]! : const Color(0xFF3949AB),
+            ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -61,65 +70,133 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
-            child: Card(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              child: Padding(
-                padding: const EdgeInsets.all(28),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.admin_panel_settings, size: 56, color: Color(0xFF1A237E)),
-                      const SizedBox(height: 12),
-                      const Text("Admin Login", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 24),
-                      TextFormField(
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        decoration: const InputDecoration(
-                          labelText: "Email",
-                          prefixIcon: Icon(Icons.email),
-                          border: OutlineInputBorder(),
-                        ),
-                        validator: (v) => v!.isEmpty ? "Enter email" : null,
+            child: Container(
+              decoration: BoxDecoration(
+                color: cardColor,
+                border: Border.all(color: borderColor, width: 1.5),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              padding: const EdgeInsets.all(28),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: textColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: textColor.withOpacity(0.2), width: 1),
                       ),
+                      child: Icon(Icons.admin_panel_settings, size: 40, color: textColor),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      "Admin Login",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    TextFormField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: InputDecoration(
+                        labelText: "Email",
+                        labelStyle: TextStyle(color: textColor),
+                        prefixIcon: Icon(Icons.email, color: textColor),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: borderColor, width: 1.5),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: borderColor, width: 1.5),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: textColor, width: 2),
+                        ),
+                      ),
+                      style: TextStyle(color: textColor),
+                      validator: (v) => v!.isEmpty ? "Enter email" : null,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _passwordController,
+                      obscureText: _obscure,
+                      decoration: InputDecoration(
+                        labelText: "Password",
+                        labelStyle: TextStyle(color: textColor),
+                        prefixIcon: Icon(Icons.lock, color: textColor),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: borderColor, width: 1.5),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: borderColor, width: 1.5),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: textColor, width: 2),
+                        ),
+                        suffixIcon: IconButton(
+                          icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off, color: textColor),
+                          onPressed: () => setState(() => _obscure = !_obscure),
+                        ),
+                      ),
+                      style: TextStyle(color: textColor),
+                      validator: (v) => v!.length < 6 ? "Min 6 characters" : null,
+                    ),
+                    if (_error != null) ...[
                       const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _passwordController,
-                        obscureText: _obscure,
-                        decoration: InputDecoration(
-                          labelText: "Password",
-                          prefixIcon: const Icon(Icons.lock),
-                          border: const OutlineInputBorder(),
-                          suffixIcon: IconButton(
-                            icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
-                            onPressed: () => setState(() => _obscure = !_obscure),
-                          ),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.red.withOpacity(0.3)),
                         ),
-                        validator: (v) => v!.length < 6 ? "Min 6 characters" : null,
-                      ),
-                      if (_error != null) ...[
-                        const SizedBox(height: 12),
-                        Text(_error!, style: const TextStyle(color: Colors.red)),
-                      ],
-                      const SizedBox(height: 24),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: _loading ? null : _login,
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            backgroundColor: const Color(0xFF1A237E),
-                            foregroundColor: Colors.white,
-                          ),
-                          child: _loading
-                              ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                              : const Text("Login", style: TextStyle(fontSize: 16)),
+                        child: Text(
+                          _error!,
+                          style: const TextStyle(color: Colors.red, fontSize: 13),
                         ),
                       ),
                     ],
-                  ),
+                    const SizedBox(height: 28),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _loading ? null : _login,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          backgroundColor: textColor,
+                          foregroundColor: isDark ? Colors.black : Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: _loading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text(
+                                "Login",
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

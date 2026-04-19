@@ -23,13 +23,14 @@ class _SongFormScreenState extends State<SongFormScreen> {
   bool _isSingle = false;
   bool _loading = false;
   List<Album> _albums = [];
+  List<String> _styles = MusicScale.allStyles;
 
   bool get _isEditing => widget.song != null;
 
   @override
   void initState() {
     super.initState();
-    _loadAlbums();
+    _loadData();
     if (_isEditing) {
       _titleController.text = widget.song!.title;
       _lyricsController.text = widget.song!.lyrics;
@@ -41,10 +42,15 @@ class _SongFormScreenState extends State<SongFormScreen> {
     }
   }
 
-  Future<void> _loadAlbums() async {
-    final snap = await FirebaseFirestore.instance.collection('albums').get();
+  Future<void> _loadData() async {
+    final albumsSnap = await FirebaseFirestore.instance.collection('albums').get();
+    final stylesSnap = await FirebaseFirestore.instance.collection('styles').get();
+
     setState(() {
-      _albums = snap.docs.map((d) => Album.fromMap(d.data(), d.id)).toList();
+      _albums = albumsSnap.docs.map((d) => Album.fromMap(d.data(), d.id)).toList();
+      if (stylesSnap.docs.isNotEmpty) {
+        _styles = stylesSnap.docs.map((d) => d['name'] as String).toList();
+      }
     });
   }
 
@@ -75,7 +81,6 @@ class _SongFormScreenState extends State<SongFormScreen> {
 
       if (_isEditing) {
         await db.collection('songs').doc(widget.song!.id).update(data);
-        // Update album assignment if changed
         await _updateAlbumAssignment(widget.song!.id, widget.song!.albumId, _selectedAlbumId);
       } else {
         final ref = await db.collection('songs').add(data);
@@ -100,7 +105,6 @@ class _SongFormScreenState extends State<SongFormScreen> {
   Future<void> _updateAlbumAssignment(String songId, String? oldAlbumId, String? newAlbumId) async {
     final db = FirebaseFirestore.instance;
     if (oldAlbumId == newAlbumId) return;
-    // Remove from old album
     if (oldAlbumId != null) {
       final oldAlbum = await db.collection('albums').doc(oldAlbumId).get();
       if (oldAlbum.exists) {
@@ -109,7 +113,6 @@ class _SongFormScreenState extends State<SongFormScreen> {
         await db.collection('albums').doc(oldAlbumId).update({'songIds': ids});
       }
     }
-    // Add to new album
     if (newAlbumId != null) {
       await _addSongToAlbum(songId, newAlbumId);
     }
@@ -129,8 +132,24 @@ class _SongFormScreenState extends State<SongFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final appBarColor = isDark ? Colors.black : const Color(0xFF1A237E);
+    final backgroundColor = isDark ? Colors.black : Colors.white;
+    final textColor = isDark ? const Color(0xFF9FA8DA) : const Color(0xFF1A237E);
+    final borderColor = isDark ? Colors.grey[700]! : Colors.grey[300]!;
+    final inputFillColor = isDark ? Colors.grey[900]! : Colors.white;
+
     return Scaffold(
-      appBar: AppBar(title: Text(_isEditing ? "Edit Song" : "Add Song")),
+      backgroundColor: backgroundColor,
+      appBar: AppBar(
+        title: Text(
+          _isEditing ? "Edit Song" : "Add Song",
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: appBarColor,
+        iconTheme: const IconThemeData(color: Colors.white),
+        elevation: 0,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -138,64 +157,87 @@ class _SongFormScreenState extends State<SongFormScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextFormField(
+              _buildTextField(
                 controller: _titleController,
-                decoration: const InputDecoration(labelText: "Song Title *", border: OutlineInputBorder()),
-                validator: (v) => v!.trim().isEmpty ? "Title is required" : null,
+                label: "Song Title *",
+                textColor: textColor,
+                borderColor: borderColor,
+                fillColor: inputFillColor,
               ),
               const SizedBox(height: 16),
-              TextFormField(
+              _buildTextField(
                 controller: _singerController,
-                decoration: const InputDecoration(labelText: "Singer Name", border: OutlineInputBorder(), prefixIcon: Icon(Icons.person)),
+                label: "Singer Name",
+                icon: Icons.person,
+                textColor: textColor,
+                borderColor: borderColor,
+                fillColor: inputFillColor,
               ),
               const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
+              _buildDropdown(
                 value: _selectedScale,
-                decoration: const InputDecoration(labelText: "Scale", border: OutlineInputBorder()),
-                items: [
-                  const DropdownMenuItem(value: null, child: Text("None")),
-                  ...MusicScale.allScales.map((s) => DropdownMenuItem(value: s.id, child: Text(s.displayName))),
-                ],
+                items: [const DropdownMenuItem(value: null, child: Text("None")), ...MusicScale.allScales.map((s) => DropdownMenuItem(value: s.id, child: Text(s.displayName)))],
+                label: "Scale",
+                textColor: textColor,
+                borderColor: borderColor,
+                fillColor: inputFillColor,
                 onChanged: (v) => setState(() => _selectedScale = v),
               ),
               const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
+              _buildDropdown(
                 value: _selectedStyle,
-                decoration: const InputDecoration(labelText: "Style", border: OutlineInputBorder()),
-                items: [
-                  const DropdownMenuItem(value: null, child: Text("None")),
-                  ...MusicScale.allStyles.map((s) => DropdownMenuItem(value: s, child: Text(s))),
-                ],
+                items: [const DropdownMenuItem(value: null, child: Text("None")), ..._styles.map((s) => DropdownMenuItem(value: s, child: Text(s)))],
+                label: "Style",
+                textColor: textColor,
+                borderColor: borderColor,
+                fillColor: inputFillColor,
                 onChanged: (v) => setState(() => _selectedStyle = v),
               ),
               const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
+              _buildDropdown(
                 value: _selectedAlbumId,
-                decoration: const InputDecoration(labelText: "Album (optional)", border: OutlineInputBorder(), prefixIcon: Icon(Icons.album)),
-                items: [
-                  const DropdownMenuItem(value: null, child: Text("No Album")),
-                  ..._albums.map((a) => DropdownMenuItem(value: a.id, child: Text(a.title))),
-                ],
+                items: [const DropdownMenuItem(value: null, child: Text("No Album")), ..._albums.map((a) => DropdownMenuItem(value: a.id, child: Text(a.title)))],
+                label: "Album (optional)",
+                icon: Icons.album,
+                textColor: textColor,
+                borderColor: borderColor,
+                fillColor: inputFillColor,
                 onChanged: (v) => setState(() => _selectedAlbumId = v),
               ),
-              const SizedBox(height: 8),
-              SwitchListTile(
-                title: const Text("Is Single"),
-                subtitle: const Text("Mark this song as a single"),
-                value: _isSingle,
-                onChanged: (v) => setState(() => _isSingle = v),
-                contentPadding: EdgeInsets.zero,
-              ),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _lyricsController,
-                maxLines: 14,
-                decoration: const InputDecoration(
-                  labelText: "Lyrics *",
-                  border: OutlineInputBorder(),
-                  alignLabelWithHint: true,
+              const SizedBox(height: 12),
+              Container(
+                decoration: BoxDecoration(
+                  color: textColor.withOpacity(0.08),
+                  border: Border.all(color: textColor.withOpacity(0.3), width: 1),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                validator: (v) => v!.trim().isEmpty ? "Lyrics are required" : null,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Is Single", style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: textColor)),
+                        Text("Mark this song as a single", style: TextStyle(fontSize: 12, color: textColor.withOpacity(0.7))),
+                      ],
+                    ),
+                    Switch(
+                      value: _isSingle,
+                      onChanged: (v) => setState(() => _isSingle = v),
+                      activeColor: textColor,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildTextField(
+                controller: _lyricsController,
+                label: "Lyrics *",
+                maxLines: 14,
+                textColor: textColor,
+                borderColor: borderColor,
+                fillColor: inputFillColor,
               ),
               const SizedBox(height: 24),
               SizedBox(
@@ -204,16 +246,96 @@ class _SongFormScreenState extends State<SongFormScreen> {
                   onPressed: _loading ? null : _save,
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    backgroundColor: const Color(0xFF1A237E),
-                    foregroundColor: Colors.white,
+                    backgroundColor: textColor,
+                    foregroundColor: isDark ? Colors.black : Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   child: _loading
-                      ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : Text(_isEditing ? "Update Song" : "Add Song", style: const TextStyle(fontSize: 16)),
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        )
+                      : Text(
+                          _isEditing ? "Update Song" : "Add Song",
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
                 ),
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required Color textColor,
+    required Color borderColor,
+    required Color fillColor,
+    IconData? icon,
+    int maxLines = 1,
+  }) {
+    return TextFormField(
+      controller: controller,
+      maxLines: maxLines,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: textColor),
+        prefixIcon: icon != null ? Icon(icon, color: textColor) : null,
+        filled: true,
+        fillColor: fillColor,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: borderColor, width: 1.5),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: borderColor, width: 1.5),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: textColor, width: 2),
+        ),
+      ),
+      style: TextStyle(color: textColor),
+      validator: (v) => v!.trim().isEmpty ? "$label is required" : null,
+    );
+  }
+
+  Widget _buildDropdown({
+    required dynamic value,
+    required List<DropdownMenuItem> items,
+    required String label,
+    required Color textColor,
+    required Color borderColor,
+    required Color fillColor,
+    required ValueChanged onChanged,
+    IconData? icon,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: fillColor,
+        border: Border.all(color: borderColor, width: 1.5),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButtonFormField(
+          value: value,
+          dropdownColor: fillColor,
+          decoration: InputDecoration(
+            labelText: label,
+            labelStyle: TextStyle(color: textColor),
+            prefixIcon: icon != null ? Icon(icon, color: textColor) : null,
+            border: InputBorder.none,
+          ),
+          style: TextStyle(color: textColor, fontSize: 15),
+          items: items,
+          onChanged: (v) => onChanged(v),
         ),
       ),
     );

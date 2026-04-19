@@ -8,26 +8,49 @@ class SinglesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final appBarColor = isDark ? Colors.black : const Color(0xFF1A237E);
+    final gradientStart = isDark ? Colors.black : const Color(0xFF1A237E);
+    final gradientEnd = isDark ? Colors.grey[900]! : const Color(0xFF3949AB);
+    final cardColor = isDark ? Colors.grey[900]! : Colors.white;
+    final cardTextColor = isDark ? const Color(0xFF9FA8DA) : const Color(0xFF1A237E);
+    final sectionTextColor = isDark ? const Color(0xFF9FA8DA) : const Color(0xFF1A237E);
+    final backgroundColor = isDark ? Colors.black : Colors.white;
+    final borderColor = isDark ? Colors.grey[700]! : Colors.grey[300]!;
+
     return Scaffold(
+      backgroundColor: backgroundColor,
+      appBar: AppBar(
+        title: const Text(
+          "All Songs",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: appBarColor,
+        iconTheme: const IconThemeData(color: Colors.white),
+        elevation: 0,
+      ),
       body: CustomScrollView(
         slivers: [
-          SliverAppBar(
-            expandedHeight: 160,
-            floating: true,
-            pinned: true,
-            backgroundColor: const Color(0xFF1A237E),
-            flexibleSpace: FlexibleSpaceBar(
-              title: const Text("All Songs"),
-              background: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF1A237E), Color(0xFF3949AB)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+          SliverToBoxAdapter(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [gradientStart, gradientEnd],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-                child: Center(
-                  child: Icon(Icons.library_music, size: 64, color: Colors.white.withValues(alpha: 0.15)),
+              ),
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                child: Column(
+                  children: [
+                    Icon(Icons.library_music, size: 48, color: Colors.white.withOpacity(0.2)),
+                  ],
                 ),
               ),
             ),
@@ -64,24 +87,10 @@ class SinglesScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        "${songs.length} Songs",
-                        style: TextStyle(fontSize: 13, color: Colors.grey[600], fontWeight: FontWeight.w500),
-                      ),
-                      const SizedBox(height: 12),
-                      ...songs.asMap().entries.map((entry) {
-                        final index = entry.key;
-                        final song = entry.value;
-                        final colors = [
-                          [const Color(0xFF1A237E), const Color(0xFF3949AB)],
-                          [const Color(0xFF00695C), const Color(0xFF00897B)],
-                          [const Color(0xFF6A1B9A), const Color(0xFF8E24AA)],
-                          [const Color(0xFFE65100), const Color(0xFFF57C00)],
-                          [const Color(0xFF1565C0), const Color(0xFF1976D2)],
-                          [const Color(0xFF2E7D32), const Color(0xFF388E3C)],
-                        ][index % 6];
-
-                        return _buildSongCard(song, colors, context);
+                      _buildSectionHeader("${songs.length} Songs", sectionTextColor),
+                      const SizedBox(height: 16),
+                      ...songs.map((song) {
+                        return _buildSongCard(song, cardColor, cardTextColor, borderColor, context);
                       }),
                     ],
                   ),
@@ -94,54 +103,99 @@ class SinglesScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSongCard(Song song, List<Color> colors, BuildContext context) {
+  Widget _buildSectionHeader(String title, Color textColor) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: textColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: textColor.withOpacity(0.2), width: 1),
+          ),
+          child: Icon(Icons.library_music, color: textColor, size: 22),
+        ),
+        const SizedBox(width: 14),
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: textColor,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSongCard(Song song, Color cardColor, Color textColor, Color borderColor, BuildContext context) {
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => SongDetailScreen(songId: song.id)),
       ),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
+        margin: const EdgeInsets.only(bottom: 14),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(colors: colors, begin: Alignment.centerLeft, end: Alignment.centerRight),
-          boxShadow: [BoxShadow(color: colors[0].withValues(alpha: 0.25), blurRadius: 8, offset: const Offset(0, 3))],
+          color: cardColor,
+          border: Border.all(color: borderColor, width: 1.5),
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: textColor.withOpacity(0.08),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
+        child: Container(
+          padding: const EdgeInsets.all(14),
           child: Row(
             children: [
               Container(
-                width: 48,
-                height: 48,
+                width: 50,
+                height: 50,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: textColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: borderColor, width: 1),
                 ),
-                child: const Icon(Icons.music_note, color: Colors.white, size: 26),
+                child: Icon(Icons.music_note, color: textColor, size: 24),
               ),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(song.title, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 4),
+                    Text(
+                      song.title,
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
                     Wrap(
                       spacing: 6,
+                      runSpacing: 6,
                       children: [
                         if (song.singerName != null)
-                          _tag(song.singerName!),
+                          _tag(song.singerName!, textColor),
                         if (song.scale != null)
-                          _tag(song.scale!),
+                          _tag(song.scale!, textColor),
                         if (song.style != null)
-                          _tag(song.style!),
+                          _tag(song.style!, textColor),
                       ],
                     ),
                   ],
                 ),
               ),
-              const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
+              Icon(
+                Icons.arrow_forward_ios,
+                color: textColor.withOpacity(0.6),
+                size: 16,
+              ),
             ],
           ),
         ),
@@ -149,14 +203,22 @@ class SinglesScreen extends StatelessWidget {
     );
   }
 
-  Widget _tag(String label) {
+  Widget _tag(String label, Color textColor) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(10),
+        color: textColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: textColor.withOpacity(0.2)),
       ),
-      child: Text(label, style: const TextStyle(color: Colors.white, fontSize: 11)),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: textColor,
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
     );
   }
 }

@@ -4,6 +4,7 @@ import "screens/home_screen.dart";
 import "firebase_options.dart";
 import "theme/theme_notifier.dart";
 import "theme/font_size_notifier.dart";
+import "services/connectivity_service.dart";
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,6 +15,8 @@ Future<void> main() async {
   } catch (e) {
     debugPrint("Firebase init error: $e");
   }
+  // Initialize connectivity service for offline sync
+  ConnectivityService.getInstance();
   runApp(const WeedduuApp());
 }
 

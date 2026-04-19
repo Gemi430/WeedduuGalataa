@@ -36,9 +36,24 @@ class _SongListScreenState extends State<SongListScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final appBarColor = isDark ? Colors.black : const Color(0xFF1A237E);
+    final backgroundColor = isDark ? Colors.black : Colors.white;
+    final cardColor = isDark ? Colors.grey[900]! : Colors.white;
+    final textColor = isDark ? const Color(0xFF9FA8DA) : const Color(0xFF1A237E);
+    final iconColor = isDark ? const Color(0xFF9FA8DA) : const Color(0xFF1A237E);
+    final secondaryTextColor = isDark ? const Color(0xFF9FA8DA).withOpacity(0.6) : Colors.grey[600];
+    final borderColor = isDark ? Colors.grey[700]! : Colors.grey[300]!;
 
     return Scaffold(
-      appBar: AppBar(title: Text("${widget.style} Songs")),
+      backgroundColor: backgroundColor,
+      appBar: AppBar(
+        title: Text(
+          "${widget.style} Songs",
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: appBarColor,
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
       body: FutureBuilder<List<Song>>(
         future: _songsFuture,
         builder: (context, snapshot) {
@@ -51,9 +66,12 @@ class _SongListScreenState extends State<SongListScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.music_off, size: 48, color: Colors.grey[400]),
-                  const SizedBox(height: 12),
-                  Text("No songs found", style: TextStyle(color: Colors.grey[600])),
+                  Icon(Icons.music_off, size: 64, color: secondaryTextColor),
+                  const SizedBox(height: 16),
+                  Text(
+                    "No songs found",
+                    style: TextStyle(fontSize: 16, color: secondaryTextColor),
+                  ),
                 ],
               ),
             );
@@ -64,45 +82,75 @@ class _SongListScreenState extends State<SongListScreen> {
             itemCount: snapshot.data!.length,
             itemBuilder: (context, index) {
               final song = snapshot.data![index];
+              final isLast = index == snapshot.data!.length - 1;
+
               return GestureDetector(
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => SongDetailScreen(songId: song.id)),
                 ),
                 child: Container(
-                  margin: const EdgeInsets.only(bottom: 10),
-                  padding: const EdgeInsets.all(14),
+                  margin: EdgeInsets.only(bottom: isLast ? 0 : 12),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1E1E2E) : Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                    boxShadow: isDark ? [] : [
-                      BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))
+                    color: cardColor,
+                    border: Border.all(color: borderColor, width: 1.5),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: textColor.withOpacity(0.06),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
                     ],
                   ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1A237E).withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 46,
+                          height: 46,
+                          decoration: BoxDecoration(
+                            color: iconColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: borderColor, width: 1),
+                          ),
+                          child: Icon(Icons.music_note, color: iconColor, size: 22),
                         ),
-                        child: const Icon(Icons.music_note, color: Color(0xFF1A237E), size: 22),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(song.title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                            if (song.singerName != null)
-                              Text(song.singerName!, style: TextStyle(fontSize: 12, color: Colors.grey[500])),
-                          ],
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                song.title,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 15,
+                                  color: textColor,
+                                ),
+                              ),
+                              if (song.singerName != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 4),
+                                  child: Text(
+                                    song.singerName!,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: secondaryTextColor,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
-                      ),
-                      Icon(Icons.chevron_right, color: Colors.grey[400], size: 20),
-                    ],
+                        Icon(
+                          Icons.chevron_right,
+                          color: iconColor.withOpacity(0.5),
+                          size: 20,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               );

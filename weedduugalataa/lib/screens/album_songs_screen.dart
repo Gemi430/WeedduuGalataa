@@ -25,8 +25,21 @@ class _AlbumSongsScreenState extends State<AlbumSongsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final appBarColor = isDark ? Colors.black : const Color(0xFF1A237E);
+    final backgroundColor = isDark ? Colors.black : Colors.white;
+    final cardColor = isDark ? Colors.grey[900]! : Colors.white;
+    final textColor = isDark ? const Color(0xFF9FA8DA) : const Color(0xFF1A237E);
+    final iconColor = isDark ? const Color(0xFF9FA8DA) : const Color(0xFF1A237E);
+    final borderColor = isDark ? Colors.grey[700]! : Colors.grey[300]!;
+
     return Scaffold(
-      appBar: AppBar(title: Text(widget.albumTitle)),
+      backgroundColor: backgroundColor,
+      appBar: AppBar(
+        title: Text(widget.albumTitle, style: const TextStyle(color: Colors.white)),
+        backgroundColor: appBarColor,
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
       body: FutureBuilder<List<Song>>(
         future: _songsFuture,
         builder: (context, snapshot) {
@@ -35,7 +48,19 @@ class _AlbumSongsScreenState extends State<AlbumSongsScreen> {
           }
 
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text("No songs in this album"));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.music_off, size: 64, color: textColor.withOpacity(0.4)),
+                  const SizedBox(height: 16),
+                  Text(
+                    "No songs in this album",
+                    style: TextStyle(fontSize: 16, color: textColor.withOpacity(0.6)),
+                  ),
+                ],
+              ),
+            );
           }
 
           return ListView.builder(
@@ -43,11 +68,43 @@ class _AlbumSongsScreenState extends State<AlbumSongsScreen> {
             itemCount: snapshot.data!.length,
             itemBuilder: (context, index) {
               final song = snapshot.data![index];
-              return Card(
-                margin: const EdgeInsets.only(bottom: 12),
+              final isFirst = index == 0;
+              final isLast = index == snapshot.data!.length - 1;
+
+              return Container(
+                margin: EdgeInsets.only(
+                  bottom: isLast ? 0 : 12,
+                ),
+                decoration: BoxDecoration(
+                  color: cardColor,
+                  border: Border.all(color: borderColor, width: 1.5),
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 child: ListTile(
-                  leading: const Icon(Icons.music_note, color: Colors.teal),
-                  title: Text(song.title),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  leading: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: iconColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: borderColor, width: 1),
+                    ),
+                    child: Icon(Icons.music_note, color: iconColor, size: 22),
+                  ),
+                  title: Text(
+                    song.title,
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  trailing: Icon(
+                    Icons.arrow_forward_ios,
+                    color: iconColor.withOpacity(0.5),
+                    size: 16,
+                  ),
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
