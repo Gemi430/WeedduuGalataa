@@ -41,30 +41,156 @@ class _LyricsSubmissionsAdminScreenState extends State<LyricsSubmissionsAdminScr
     );
 
     if (confirm == true) {
-      try {
-        // Create the song
-        final songRef = await FirebaseFirestore.instance.collection('songs').add({
-          'title': submission.songTitle,
-          'lyrics': submission.lyrics,
-          'scale': submission.scale,
-          'style': submission.style,
-          'singerName': submission.singerName,
-          'isSingle': true,
-          'albumId': null,
-          'orderIndex': 0,
-        });
+      await _createSongFromSubmission(submission);
+    }
+  }
 
-        // Update submission status
-        await FirebaseFirestore.instance.collection('lyrics_submissions').doc(submission.id).update({
-          'status': 'approved',
-          'approvedAt': DateTime.now().toIso8601String(),
-          'songId': songRef.id,
-        });
+  Future<void> _createSongFromSubmission(LyricsSubmission submission, {String? editedLyrics, String? editedTitle, String? editedSinger, String? editedScale, String? editedStyle}) async {
+    try {
+      final songData = {
+        'title': editedTitle ?? submission.songTitle,
+        'lyrics': editedLyrics ?? submission.lyrics,
+        'scale': editedScale ?? submission.scale,
+        'style': editedStyle ?? submission.style,
+        'singerName': editedSinger ?? submission.singerName,
+        'isSingle': true,
+        'albumId': null,
+        'orderIndex': 0,
+      };
 
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Song created and submission approved!")));
-      } catch (e) {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
-      }
+      final songRef = await FirebaseFirestore.instance.collection('songs').add(songData);
+
+      await FirebaseFirestore.instance.collection('lyrics_submissions').doc(submission.id).update({
+        'status': 'approved',
+        'approvedAt': DateTime.now().toIso8601String(),
+        'songId': songRef.id,
+      });
+
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Song created and submission approved!")));
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+    }
+  }
+
+  void _showEditDialog(LyricsSubmission submission) {
+    final titleController = TextEditingController(text: submission.songTitle);
+    final singerController = TextEditingController(text: submission.singerName ?? '');
+    final scaleController = TextEditingController(text: submission.scale);
+    final styleController = TextEditingController(text: submission.style);
+    final lyricsController = TextEditingController(text: submission.lyrics);
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Edit Submission"),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text("Title:", style: TextStyle(fontWeight: FontWeight.bold)),
+              TextFormField(controller: titleController, decoration: const InputDecoration(border: OutlineInputBorder())),
+              const SizedBox(height: 12),
+              const Text("Singer (optional):", style: TextStyle(fontWeight: FontWeight.bold)),
+              TextFormField(controller: singerController, decoration: const InputDecoration(border: OutlineInputBorder())),
+              const SizedBox(height: 12),
+              const Text("Scale:", style: TextStyle(fontWeight: FontWeight.bold)),
+              TextFormField(controller: scaleController, decoration: const InputDecoration(border: OutlineInputBorder())),
+              const SizedBox(height: 12),
+              const Text("Style:", style: TextStyle(fontWeight: FontWeight.bold)),
+              TextFormField(controller: styleController, decoration: const InputDecoration(border: OutlineInputBorder())),
+              const SizedBox(height: 12),
+              const Text("Lyrics:", style: TextStyle(fontWeight: FontWeight.bold)),
+              TextFormField(
+                controller: lyricsController,
+                maxLines: 10,
+                decoration: const InputDecoration(border: OutlineInputBorder()),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Cancel")),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _approveWithEdits(
+                submission,
+                title: titleController.text,
+                singer: singerController.text.isEmpty ? null : singerController.text,
+                scale: scaleController.text,
+                style: styleController.text,
+                lyrics: lyricsController.text,
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text("Save & Approve"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _approveWithEdits(
+    LyricsSubmission submission, {
+    required String title,
+    String? singer,
+    required String scale,
+    required String style,
+    required String lyrics,
+  }) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Confirm & Create Song"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text("This will create a new song with the edited lyrics."),
+            const SizedBox(height: 8),
+            Text("Title: $title", style: const TextStyle(fontWeight: FontWeight.bold)),
+            if (singer != null) Text("Singer: $singer"),
+            Text("Scale: $scale"),
+            Text("Style: $style"),
+            const SizedBox(height: 8),
+            const Text("Lyrics preview:", style: TextStyle(fontWeight: FontWeight.bold)),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                lyrics.length > 100 ? '${lyrics.substring(0, 100)}...' : lyrics,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("Cancel")),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text("Approve & Create", style: TextStyle(color: Colors.green)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      await _createSongFromSubmission(
+        submission,
+        editedTitle: title,
+        editedSinger: singer,
+        editedScale: scale,
+        editedStyle: style,
+        editedLyrics: lyrics,
+      );
     }
   }
 
@@ -316,6 +442,18 @@ class _LyricsSubmissionsAdminScreenState extends State<LyricsSubmissionsAdminScr
                                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                       ),
                                       child: const Text("Reject"),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: OutlinedButton(
+                                      onPressed: () => _showEditDialog(submission),
+                                      style: OutlinedButton.styleFrom(
+                                        foregroundColor: Colors.blue,
+                                        side: const BorderSide(color: Colors.blue),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                      ),
+                                      child: const Text("Edit"),
                                     ),
                                   ),
                                   const SizedBox(width: 12),
