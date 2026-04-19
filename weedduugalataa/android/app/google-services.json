@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "000000000000",
-    "project_id": "REPLACE_ME_PROJECT_ID",
-    "storage_bucket": "REPLACE_ME_PROJECT_ID.appspot.com"
+    "project_number": "923218740500",
+    "project_id": "gemechis-cef27",
+    "storage_bucket": "gemechis-cef27.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:000000000000:android:0000000000000000000000",
+        "mobilesdk_app_id": "1:923218740500:android:c3b9292b5e39ca3483ee01",
         "android_client_info": {
           "package_name": "com.example.weedduugalataa"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "REPLACE_ME"
+          "current_key": "AIzaSyAkfhzACLRCm_6VCqliwBO6oLm2bdb63Lk"
         }
       ],
       "services": {
